@@ -15,7 +15,19 @@ class RenderWindow{
     void display();
 
 };
+//!GOTO: 
 
+
+};
+//!GOTO: ENTITY
+class Entity{
+  private:
+    float x,y;
+  public:
+
+
+
+};
 //!GOTO: WINDOWS RENDERING
 RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h): window(NULL), render(NULL){//Default Initialized;
  window = SDL_CreateWindow(p_title,SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,p_w,p_h,SDL_WINDOW_SHOWN);
@@ -43,12 +55,26 @@ void RenderWindow::cleanup(){
 void RenderWindow::clear(){//Clearing The window;
   SDL_RenderClear(render);
 }
+//!GOTO: RENDERING UNIT;
 void RenderWindow::renderer(SDL_Texture* p_text){//rendering the Texture;
-  SDL_RenderCopy(render, p_text,NULL,NULL);
+  SDL_Rect src;//Define texture position on x,y and size at w,h;
+    src.x = 0;
+    src.y = 0;
+    src.w = 32;
+    src.h = 32;
+
+  SDL_Rect dst;
+    dst.x = 400;
+    dst.y = 200;
+    dst.w = 32 * 4;
+    dst.h = 32 * 4;
+
+  SDL_RenderCopy(render, p_text,&src,&dst);
 }
 void RenderWindow::display(){//Previewing the rendering image;
   SDL_RenderPresent(render);
 }
+
 
 //!GOTO: MAIN 
 int main(int argc, char* args[]){
@@ -63,7 +89,10 @@ if(SDL_Init(IMG_INIT_PNG) != 0){//Checking Image;
 }
 //Init Window;
 RenderWindow window("Halking Knight - A 2D Game v1.0",720,480);//Game Name and Size;
+//? Grass Texture;
 SDL_Texture* grassTexture  = window.LoadTexture("res/gfx/ground_grass_1.png");//Grass Texture path;
+float bobx, boby;
+Entity bob;
 //!GOTO: GAMELOOP;
 bool GameRunning = true;
 SDL_Event event;
