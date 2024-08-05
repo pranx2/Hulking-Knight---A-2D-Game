@@ -125,7 +125,21 @@ RenderWindow window("Halking Knight - A 2D Game v1.0",720,480);//Game Name and S
 //!Grass Texture;
 
 SDL_Texture* grassTexture  = window.LoadTexture("res/gfx/ground_grass_1.png");//Grass Texture path;
-int entities[3] = {56,43,65};
+
+Entity entities[13] = {Entity(0,0,grassTexture),
+                      Entity(30,0,grassTexture),
+                      Entity(30,0,grassTexture),
+                      Entity(90,0,grassTexture),
+                      Entity(120,0,grassTexture),
+                      Entity(150,0,grassTexture),
+                      Entity(30,0,grassTexture),
+                      Entity(60,0,grassTexture),
+                      Entity(90,30,grassTexture),
+                      Entity(90,30,grassTexture),
+                      Entity(120,30,grassTexture),
+                      Entity(150,30,grassTexture),
+                      Entity(180,30,grassTexture),
+                      };
 
 //!GOTO: GAMELOOP;-----------------05;
 
@@ -137,7 +151,9 @@ while(GameRunning){
   }
   window.clear();
   //!Grass Texture Render;
-  window.rendereverything();
+      for(int i= 0; i < 8; i++){
+          window.renderer(entities[i]);
+      }
   window.display();
 }
 
