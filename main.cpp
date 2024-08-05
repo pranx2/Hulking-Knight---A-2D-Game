@@ -1,20 +1,49 @@
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_image.h>
 #include<iostream>
+#include<vector>
+//!GOTO: UTILITIES------------------12;
+namespace utils{
+  inline float hireTimeInSeconds(){
+    float t = SDL_GetTicks();
+    t *= 0.001f;
+    return t;
+  }
+}
 
+//!GOTO: VECTOR------------------11;
+class vector2f{
+  private:
+  public:
+    float x, y;
+    vector2f(): x(0.0f), y(0.0f){
 
+    }
+    vector2f(float p_x, float p_y): x(p_x), y(p_y) {
+      x = p_x ;
+    }
+    void print(){
+      std::cout<< x << " , " << y <<std::endl;
+    }
+};
+vector2f vec;
+vector2f vec0(1.f,34.f);
 //!GOTO: ENTITY------------------08;
 class Entity{
   private:
     float x,y;
     SDL_Rect currentFrame;
     SDL_Texture* tex;
+    vector2f pos;
   public:
-    Entity(float p_x,float p_y, SDL_Texture* p_tex);
+    Entity(vector2f p_pos, SDL_Texture* p_tex);
     float getx();
     float gety();
     SDL_Texture* getTex();
     SDL_Rect GetCurrentFrame();
+    vector2f& getpos(){
+      return pos;
+    }
 };
 
 //!Base--------------01;
@@ -40,7 +69,7 @@ RenderWindow::RenderWindow(const char* p_title, int p_w, int p_h): window(NULL),
  if(window == NULL){
   std::cout<<"Failed to Initializing Window.\nError : "<<SDL_GetError()<<std::endl;
  }
- render = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+ render = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
  if(render == NULL){
   std::cout<<"Failed to Initializing Rendering.\nError : "<<SDL_GetError()<<std::endl;
  }
@@ -68,17 +97,11 @@ void RenderWindow::clear(){//Clearing The window;
 
 //!GOTO: ENTITY--------------------09 
 
-Entity::Entity(float p_x, float p_y,SDL_Texture* p_tex) : x(p_x), y(p_y), tex(p_tex){
+Entity::Entity(vector2f p_pos, SDL_Texture* p_tex) : pos(p_pos), tex(p_tex){
   currentFrame.x = 0;
   currentFrame.y = 0;
   currentFrame.w = 32;
   currentFrame.h = 32;
-}
-float Entity::getx(){
-  return x;
-}
-float Entity::gety(){
-  return y;
 }
 SDL_Texture* Entity::getTex(){
   return tex;
@@ -96,8 +119,8 @@ void RenderWindow::renderer(Entity &p_entity){//rendering the Texture;
     src.h = p_entity.GetCurrentFrame().h;
 
   SDL_Rect dst;
-    dst.x = p_entity.getx() * 4;
-    dst.y = p_entity.gety() * 4;
+    dst.x = p_entity.getpos().x * 4;
+    dst.y = p_entity.getpos().y * 4;
     dst.w = p_entity.GetCurrentFrame().w * 4;
     dst.h = p_entity.GetCurrentFrame().h * 4;
 
@@ -120,40 +143,58 @@ if(SDL_Init(IMG_INIT_PNG) != 0){//Checking Image;
   std::cout<<"Failed to Initializing Texture.\nError: "<<SDL_GetError()<<std::endl;
 }
 //Init Window;
-RenderWindow window("Halking Knight - A 2D Game v1.0",720,480);//Game Name and Size;
+RenderWindow window("Hulking Knight - A 2D Game v1.0",720,480);//Game Name and Size;
 
 //!Grass Texture;
 
 SDL_Texture* grassTexture  = window.LoadTexture("res/gfx/ground_grass_1.png");//Grass Texture path;
 
-Entity entities[13] = {Entity(0,0,grassTexture),
-                      Entity(30,0,grassTexture),
-                      Entity(30,0,grassTexture),
-                      Entity(90,0,grassTexture),
-                      Entity(120,0,grassTexture),
-                      Entity(150,0,grassTexture),
-                      Entity(30,0,grassTexture),
-                      Entity(60,0,grassTexture),
-                      Entity(90,30,grassTexture),
-                      Entity(90,30,grassTexture),
-                      Entity(120,30,grassTexture),
-                      Entity(150,30,grassTexture),
-                      Entity(180,30,grassTexture),
+// Entity entities[13] = {Entity(0,0,grassTexture),
+//                       Entity(30,0,grassTexture),
+//                       Entity(30,0,grassTexture),
+//                       Entity(90,0,grassTexture),
+//                       Entity(120,0,grassTexture),
+//                       Entity(150,0,grassTexture),
+//                       Entity(30,0,grassTexture),
+//                       Entity(60,0,grassTexture),
+//                       Entity(90,30,grassTexture),
+//                       Entity(90,30,grassTexture),
+//                       Entity(120,30,grassTexture),
+//                       Entity(150,30,grassTexture),
+//                       Entity(180,30,grassTexture),
+                      // };
+std::vector<Entity> entitiees = {
+                      Entity(vector2f(0,0), grassTexture),
+                      Entity(vector2f(30,0), grassTexture),
+                      Entity(vector2f(90,0), grassTexture),
+                      Entity(vector2f(30,0), grassTexture),
+                      Entity(vector2f(120,0),grassTexture),
+                      Entity(vector2f(150,0),grassTexture),
+                      Entity(vector2f(30,0),grassTexture),
+                      Entity(vector2f(60,0),grassTexture),
+                      Entity(vector2f(90,30),grassTexture),
+                      Entity(vector2f(90,30),grassTexture),
+                      Entity(vector2f(120,30),grassTexture),
+                      Entity(vector2f(150,30),grassTexture),
+                      Entity(vector2f(180,30),grassTexture)
                       };
-
 //!GOTO: GAMELOOP;-----------------05;
 
 bool GameRunning = true;
 SDL_Event event;
+const float timestep = 0.01f;
+float accumlator = 0.0f;
+float currentTime = utils::hireTimeInSeconds();
 while(GameRunning){
   while(SDL_PollEvent(&event)){
     if(event.type == SDL_QUIT) GameRunning = false;
   }
   window.clear();
   //!Grass Texture Render;
-      for(int i= 0; i < 8; i++){
-          window.renderer(entities[i]);
+      for(Entity& e : entitiees){
+          window.renderer(e);
       }
+      std:: cout << utils ::hireTimeInSeconds()<< std::endl;
   window.display();
 }
 
