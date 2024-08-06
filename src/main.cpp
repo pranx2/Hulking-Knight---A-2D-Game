@@ -1,5 +1,6 @@
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_image.h>
+#include "SDL2/SDL.h"
+#include "SDL2/SDL_image.h"
+#include "SDL2/SDL_audio.h"
 #include<iostream>
 #include<vector>
 //!GOTO: UTILITIES------------------12;
@@ -55,6 +56,7 @@ class RenderWindow{
     RenderWindow(const char* p_title, int p_w,int p_h);//Constructor with three parameters;
     SDL_Texture* LoadTexture(const char* p_pathfile);//Texture finding path;
     void cleanup();//Cleanup function for avoid memory leak;
+    int GetRefreshRate();
     void clear();
     void renderer(Entity& p_entity);
     void display();
@@ -86,6 +88,12 @@ SDL_Texture* RenderWindow::LoadTexture(const char* p_pathfile){
   return texture;
 }
 
+int RenderWindow::GetRefreshRate(){
+  int displayIndex = SDL_GetWindowDisplayIndex(window);
+  SDL_DisplayMode mode;
+  SDL_GetDisplayMode(displayIndex,0,&mode);
+    return mode.refresh_rate;
+}
 //!GOTO: AVOID MEMORY LEAK----------------07;
 
 void RenderWindow::cleanup(){
@@ -144,7 +152,8 @@ if(SDL_Init(IMG_INIT_PNG) != 0){//Checking Image;
 }
 //Init Window;
 RenderWindow window("Hulking Knight - A 2D Game v1.0",720,480);//Game Name and Size;
-
+int windowRefreshRate = window.GetRefreshRate();
+std::cout <<window.GetRefreshRate()<< std::endl;
 //!Grass Texture;
 
 SDL_Texture* grassTexture  = window.LoadTexture("res/gfx/ground_grass_1.png");//Grass Texture path;
@@ -186,16 +195,31 @@ const float timestep = 0.01f;
 float accumlator = 0.0f;
 float currentTime = utils::hireTimeInSeconds();
 while(GameRunning){
+  int starTick = SDL_GetTicks();
+  float newTime = utils::hireTimeInSeconds();
+  float frameTime = newTime - currentTime;
+  currentTime = newTime;
+  accumlator+= frameTime;
+  while(accumlator >= timestep){
+  //!Game control and Events;
   while(SDL_PollEvent(&event)){
     if(event.type == SDL_QUIT) GameRunning = false;
   }
+  accumlator-=timestep;
+}
+  const float alpha = accumlator / timestep;
+  
   window.clear();
   //!Grass Texture Render;
       for(Entity& e : entitiees){
           window.renderer(e);
       }
-      std:: cout << utils ::hireTimeInSeconds()<< std::endl;
+      // std:: cout << utils ::hireTimeInSeconds()<< std::endl;
   window.display();
+  int fraameTicks = SDL_GetTicks() - starTick;
+  if(fraameTicks < 100/window.GetRefreshRate()){
+    SDL_Delay(100/window.GetRefreshRate()- fraameTicks);
+  }
 }
 
 
