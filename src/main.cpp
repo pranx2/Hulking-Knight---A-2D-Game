@@ -174,6 +174,7 @@ SDL_Texture* grassTexture  = window.LoadTexture("res/gfx/ground_grass_1.png");//
                       // };
 std::vector<Entity> entitiees = {
                       Entity(vector2f(0,0), grassTexture),
+                      Entity(vector2f(0,20), grassTexture),
                       Entity(vector2f(30,0), grassTexture),
                       Entity(vector2f(90,0), grassTexture),
                       Entity(vector2f(30,0), grassTexture),
